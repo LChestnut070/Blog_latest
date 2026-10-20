@@ -10,6 +10,7 @@ import { TableOfContents } from "@/components/TableOfContents";
 import { mdxComponents } from "@/components/mdx-components";
 import { formatDate } from "@/lib/date";
 import { getAllPosts, getAdjacentPosts, getPostBySlug } from "@/lib/posts";
+import { decodeParam } from "@/lib/url";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -26,15 +27,13 @@ const prettyCodeOptions: PrettyCodeOptions = {
   bypassInlineCode: true,
 };
 
-export const dynamicParams = false;
-
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const { slug: rawSlug } = await params;
+  const post = getPostBySlug(decodeParam(rawSlug));
 
   if (!post) return { title: "文章不存在" };
 
@@ -55,8 +54,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PostPage({ params }: PageProps) {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const { slug: rawSlug } = await params;
+  const post = getPostBySlug(decodeParam(rawSlug));
 
   if (!post) notFound();
 
