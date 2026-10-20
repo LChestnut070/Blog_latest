@@ -1,0 +1,36 @@
+---
+description: 博客项目的技术约定、写作规范与验证方式
+globs: ["app/**/*.tsx", "components/**/*.tsx", "lib/**/*.ts", "content/**/*.md"]
+alwaysApply: true
+---
+
+# 项目约定
+
+这是一个**纯静态**的 Next.js 博客，使用 `output: "export"`。所有页面在构建时生成，没有任何服务端运行时。
+
+## 硬约束
+
+- 不要引入需要服务端的 API 路由；route handler 只能是 `force-static`
+- 不要使用依赖服务器的能力：数据库、登录、ISR、`next/image` 图片优化
+- 新增文章只放在 `content/posts/*.md`，不要为了加文章改动路由结构
+- 站点级信息统一在 `lib/site.ts` 修改，不要在组件里硬编码站名、域名、作者
+
+## 写作规范
+
+- frontmatter 必填：`title`、`date`（`YYYY-MM-DD`，建议加引号）、`summary`
+- 标签用中文短词，不要带空格
+- 图片放 `public/uploads/`，正文引用 `/uploads/文件名`
+- 正文从 `##` 开始，`##` 和 `###` 会自动进入目录；不要写 `#`（标题由页面渲染）
+- 草稿用 `draft: true`，构建时自动排除
+
+## 样式规范
+
+- Tailwind CSS v4，设计变量定义在 `app/globals.css` 的 `:root` 和 `.dark`
+- 正文排版统一在 `.prose` 相关规则里调整，不要在文章里写行内样式
+- 中文正文 17px、行高 1.9，修改时保持这个阅读节奏
+- 深色模式通过 `.dark` class 切换，颜色一律用 CSS 变量，不要写死色值
+
+## 验证
+
+- 改完必须跑 `pnpm build`：静态导出会把类型错误、路由缺失、动态渲染问题全部暴露出来
+- 需要看构建结果时跑 `pnpm preview`，不要用 `next start`（静态导出不支持）
