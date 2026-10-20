@@ -8,14 +8,13 @@ type PageProps = {
   params: Promise<{ tag: string }>;
 };
 
-export const dynamicParams = false;
-
 export function generateStaticParams() {
   return getAllTags().map(({ tag }) => ({ tag }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { tag } = await params;
+  const { tag: rawTag } = await params;
+  const tag = decodeTag(rawTag);
 
   return {
     title: `标签：${tag}`,
@@ -25,7 +24,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function TagPage({ params }: PageProps) {
-  const { tag } = await params;
+  const { tag: rawTag } = await params;
+  // 开发模式下 Next 传入的是 URL 编码后的值（%E9%9A%8F%E7%AC%94），
+  // 生产构建时是解码后的值（随笔）。这里统一解码，两种模式都能命中。
+  const tag = decodeTag(rawTag);
   const posts = getPostsByTag(tag);
 
   if (posts.length === 0) notFound();
@@ -43,4 +45,13 @@ export default async function TagPage({ params }: PageProps) {
       ))}
     </div>
   );
+}
+
+function decodeTag(value: string): string {
+  if (!value.includes("%")) return value;
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
